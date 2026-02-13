@@ -4,7 +4,7 @@ import { PlusOutlined } from "@ant-design/icons";
 
 import CustomInput from "../ui/CustomInput";
 import CustomSelect from "../ui/CustomSelect";
-import CustomTextArea from "../ui/CustomTextarea";
+import CustomTextArea from "../ui/CustomTextArea";
 import Button from "../ui/CustomButton";
 
 function AddProductModal({
