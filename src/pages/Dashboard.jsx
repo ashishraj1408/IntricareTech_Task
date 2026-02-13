@@ -10,7 +10,7 @@ import {
 import AppLayout from "../components/layout/AppLayout";
 import Card from "../components/ui/Card";
 import SectionHeader from "../components/ui/SectionHeader";
-import Button from "../components/ui/Button";
+import Button from "../components/ui/CustomButton";
 import { useProducts } from "../hooks/useProducts";
 import { Spin } from "antd";
 
@@ -33,7 +33,7 @@ function Dashboard() {
 
   return (
     <AppLayout>
-      {/* Page Header */}
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <SectionHeader
           title="Product Management"
@@ -58,8 +58,7 @@ function Dashboard() {
         <>
           {/* Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            
-            {/* Total Products */}
+
             <Card className="hover:shadow-md transition duration-300">
               <div className="flex items-center justify-between">
                 <div>
@@ -103,7 +102,7 @@ function Dashboard() {
                     Revenue
                   </p>
                   <p className="text-3xl font-bold text-yellow-600 mt-2">
-                    ${totalRevenue}
+                    ₹{totalRevenue}
                   </p>
                 </div>
 

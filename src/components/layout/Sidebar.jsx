@@ -27,17 +27,18 @@ function Sidebar({ collapsed, mobile }) {
   return (
     <aside
       className={`
-        bg-white border-r border-gray-200 h-screen
+        bg-white border-r border-gray-200 h-full
         transition-all duration-300 ease-in-out
         ${mobile ? "w-64" : collapsed ? "w-20" : "w-64"}
       `}
     >
       <div className="flex flex-col h-full p-4">
+        
         {/* Logo */}
         <div className="mb-8 flex items-center justify-center">
           {!collapsed || mobile ? (
             <h2 className="text-lg font-semibold text-indigo-600">
-              Intricare
+              IntriCareTech
             </h2>
           ) : (
             <span className="text-indigo-600 font-bold text-xl">

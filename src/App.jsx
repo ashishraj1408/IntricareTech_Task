@@ -1,16 +1,28 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Dashboard from "./pages/Dashboard";
-import Products from "./pages/Products";
+import { Suspense, lazy } from "react";
+import { Spin } from "antd";
+
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Products = lazy(() => import("./pages/Products"));
+const Setting = lazy(() => import("./pages/Setting"));
 
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/products" element={<Products />} />
-        <Route path="/settings" element={<div>Settings Page</div>} />
-      </Routes>
+      <Suspense
+        fallback={
+          <div className="flex items-center justify-center h-screen">
+            <Spin size="large" />
+          </div>
+        }
+      >
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/products" element={<Products />} />
+          <Route path="/settings" element={<Setting />} />
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }

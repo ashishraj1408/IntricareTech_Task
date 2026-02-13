@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
+import Container from "./Container";
 
 function AppLayout({ children }) {
   const [collapsed, setCollapsed] = useState(false);
@@ -18,9 +19,10 @@ function AppLayout({ children }) {
   }, []);
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Desktop Sidebar */}
-      <div className="hidden lg:block">
+    <div className="flex h-screen overflow-hidden bg-gray-50">
+      
+     {/* Desktop Sidebar  */}
+      <div className="hidden lg:block h-full">
         <Sidebar collapsed={collapsed} />
       </div>
 
@@ -31,22 +33,29 @@ function AppLayout({ children }) {
             className="fixed inset-0 bg-black/40 z-40 lg:hidden"
             onClick={() => setMobileOpen(false)}
           />
-          <div className="fixed z-50 lg:hidden">
+          <div className="fixed z-50 lg:hidden h-full">
             <Sidebar collapsed={false} mobile />
           </div>
         </>
       )}
 
-      {/* Main Area */}
-      <div className="flex-1 flex flex-col transition-all duration-300">
-        <Navbar
-          collapsed={collapsed}
-          setCollapsed={setCollapsed}
-          setMobileOpen={setMobileOpen}
-        />
+      {/* Right Section */}
+      <div className="flex-1 flex flex-col h-full">
 
-        <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6">
-          <div className="max-w-7xl mx-auto">{children}</div>
+        {/* Fixed Navbar */}
+        <div className="flex-shrink-0">
+          <Navbar
+            collapsed={collapsed}
+            setCollapsed={setCollapsed}
+            setMobileOpen={setMobileOpen}
+          />
+        </div>
+
+        {/* Scrollable Content */}
+        <main className="flex-1 overflow-y-auto py-6">
+          <Container>
+            {children}
+          </Container>
         </main>
       </div>
     </div>

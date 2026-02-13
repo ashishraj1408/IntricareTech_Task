@@ -12,7 +12,9 @@ function Navbar({
   return (
     <header className="bg-white border-b border-gray-200 shadow-sm">
       <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4">
+        
         <div className="flex items-center gap-4">
+          
           {/* Mobile Toggle */}
           <button
             className="lg:hidden text-lg text-gray-600"
