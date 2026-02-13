@@ -2,7 +2,7 @@ import { Input } from "antd";
 
 const { TextArea } = Input;
 
-function CustomTextArea({ label, ...props }) {
+function CustomText({ label, ...props }) {
   return (
     <div className="flex flex-col gap-1">
       {label && (
@@ -19,4 +19,4 @@ function CustomTextArea({ label, ...props }) {
   );
 }
 
-export default CustomTextArea;
+export default CustomText;

@@ -4,7 +4,7 @@ import { PlusOutlined } from "@ant-design/icons";
 
 import CustomInput from "../ui/CustomInput";
 import CustomSelect from "../ui/CustomSelect";
-import CustomTextArea from "../ui/CustomTextArea";
+import CustomText from "../ui/CustomText";
 import Button from "../ui/CustomButton";
 
 function AddProductModal({
@@ -243,7 +243,7 @@ function AddProductModal({
         </div>
 
         {/* Description */}
-        <CustomTextArea
+        <CustomText
           label="Description"
           value={formData.description}
           onChange={(e) =>
