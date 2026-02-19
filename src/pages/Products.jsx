@@ -16,14 +16,18 @@ import Card from "../components/ui/Card";
 import AddProductModal from "../components/products/AddProductModal";
 import { useProducts } from "../hooks/useProducts";
 import { useDebounce } from "../hooks/useDebounce";
+import CustomSelect from "../components/ui/CustomSelect";
 
 const { Search } = Input;
 
 function Products() {
   const {
     products,
+    categories,
     loading,
     error,
+    getProducts,
+    getProductsByCategory,
     addProduct,
     updateProduct,
     deleteProduct,
@@ -32,62 +36,65 @@ function Products() {
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [api, contextHolder] = notification.useNotification();
+  /* ---------------- CATEGORY ---------------- */
 
-  /* ---------------- Search ---------------- */
+  const rawCategory = searchParams.get("category");
+  const selectedCategory =
+    !rawCategory || rawCategory === "undefined" ? "all" : rawCategory;
+
+  /* ---------------- SEARCH ---------------- */
 
   const searchQuery = searchParams.get("search") || "";
   const [searchInput, setSearchInput] = useState(searchQuery);
   const debouncedSearch = useDebounce(searchInput, 500);
 
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [api, contextHolder] = notification.useNotification();
+
+  /* ---------------- SEARCH SYNC ---------------- */
+
   useEffect(() => {
-    const params = Object.fromEntries(searchParams);
+    const params = new URLSearchParams(searchParams);
 
     if (debouncedSearch) {
-      setSearchParams({
-        ...params,
-        search: debouncedSearch,
-        page: 1,
-      });
+      params.set("search", debouncedSearch);
     } else {
-      const { search, ...rest } = params;
-      setSearchParams({
-        ...rest,
-        page: 1,
-      });
+      params.delete("search");
     }
+
+    params.set("page", "1");
+    setSearchParams(params);
   }, [debouncedSearch]);
 
-  /* ---------------- Filtering ---------------- */
+  /* ---------------- FILTER ---------------- */
 
   const filteredProducts = products.filter((product) =>
-    product.title.toLowerCase().includes(searchQuery.toLowerCase()),
+    product.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  /* ---------------- Pagination ---------------- */
+  /* ---------------- PAGINATION ---------------- */
 
   const pageSize = 8;
   const currentPage = Number(searchParams.get("page")) || 1;
 
+  const startIndex = (currentPage - 1) * pageSize;
   const paginatedProducts = filteredProducts.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize,
+    startIndex,
+    startIndex + pageSize
   );
 
   useEffect(() => {
-    const maxPage = Math.ceil(filteredProducts.length / pageSize);
+    const maxPage = Math.ceil(filteredProducts.length / pageSize) || 1;
 
-    if (currentPage > maxPage && maxPage > 0) {
-      setSearchParams((prev) => {
-        const params = Object.fromEntries(prev);
-        return { ...params, page: maxPage };
-      });
+    if (currentPage > maxPage) {
+      const params = new URLSearchParams(searchParams);
+      params.set("page", "1");
+      setSearchParams(params);
     }
-  }, [filteredProducts, currentPage]);
+  }, [filteredProducts.length]);
 
-  /* ---------------- Modal Auto Open ---------------- */
+  /* ---------------- AUTO MODAL ---------------- */
 
   useEffect(() => {
     if (location.state?.openModal) {
@@ -96,7 +103,24 @@ function Products() {
     }
   }, [location.state]);
 
-  /* ---------------- Delete ---------------- */
+  /* ---------------- CATEGORY CHANGE ---------------- */
+
+  const handleCategoryChange = (value) => {
+    const params = new URLSearchParams(searchParams);
+
+    if (!value || value === "all") {
+      params.delete("category");
+      getProducts();
+    } else {
+      params.set("category", value);
+      getProductsByCategory(value);
+    }
+
+    params.set("page", "1");
+    setSearchParams(params);
+  };
+
+  /* ---------------- DELETE ---------------- */
 
   const handleDelete = async (id) => {
     try {
@@ -111,22 +135,37 @@ function Products() {
     <AppLayout>
       {contextHolder}
 
-      {/* Filter section */}
-      <div className="mb-3 gap-4 flex justify-between items-center">
-        <Search
-          placeholder="Search products..."
-          allowClear
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          className="max-w-md"
-        />
+      {/* FILTER SECTION */}
+      <div className="mb-6 flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
+        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+          <Search
+            placeholder="Search products..."
+            allowClear
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            className="w-full sm:w-64"
+          />
+
+          <CustomSelect
+            value={selectedCategory}
+            onChange={handleCategoryChange}
+            className="min-w-[200px]"
+            options={[
+              { label: "All Categories", value: "all" },
+              ...categories.map((cat) => ({
+                label: cat,
+                value: cat,
+              })),
+            ]}
+          />
+        </div>
 
         <Button type="primary" onClick={() => setModalOpen(true)}>
           Add Product
         </Button>
       </div>
 
-      {/* -------- Header -------- */}
+      {/* HEADER */}
       <div className="mb-6">
         <h2 className="text-2xl font-semibold text-gray-800">Products</h2>
         <p className="text-sm text-gray-500">
@@ -134,7 +173,7 @@ function Products() {
         </p>
       </div>
 
-      {/* -------- Modal -------- */}
+      {/* MODAL */}
       <AddProductModal
         open={modalOpen}
         onClose={() => {
@@ -147,15 +186,12 @@ function Products() {
         initialData={selectedProduct}
       />
 
-      {/* -------- Skeleton Loading -------- */}
+      {/* LOADING */}
       {loading && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {Array.from({ length: pageSize }).map((_, index) => (
             <Card key={index} className="animate-pulse">
-              <div className="h-48 bg-gray-200 rounded-md mb-4 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 animate-shimmer" />
-              </div>
-
+              <div className="h-48 bg-gray-200 rounded-md mb-4" />
               <div className="space-y-3">
                 <div className="h-4 bg-gray-200 rounded w-3/4" />
                 <div className="h-4 bg-gray-200 rounded w-1/2" />
@@ -166,6 +202,7 @@ function Products() {
         </div>
       )}
 
+      {/* ERROR */}
       {!loading && error && (
         <Alert
           message="Error"
@@ -175,7 +212,8 @@ function Products() {
           className="mb-6"
         />
       )}
-      
+
+      {/* EMPTY */}
       {!loading && !error && filteredProducts.length === 0 && (
         <Empty
           description={
@@ -186,6 +224,7 @@ function Products() {
         />
       )}
 
+      {/* GRID */}
       {!loading && !error && filteredProducts.length > 0 && (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -222,8 +261,7 @@ function Products() {
                           setSelectedProduct(product);
                           setModalOpen(true);
                         }}
-                        className="w-8 h-8 flex items-center justify-center rounded-md 
-                                   hover:bg-indigo-50 text-gray-500 hover:text-indigo-600 transition"
+                        className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-indigo-50 text-gray-500 hover:text-indigo-600 transition"
                       >
                         <EditOutlined />
                       </button>
@@ -235,10 +273,7 @@ function Products() {
                         cancelText="No"
                         onConfirm={() => handleDelete(product.id)}
                       >
-                        <button
-                          className="w-8 h-8 flex items-center justify-center rounded-md 
-                                     hover:bg-red-50 text-gray-500 hover:text-red-500 transition"
-                        >
+                        <button className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-red-50 text-gray-500 hover:text-red-500 transition">
                           <DeleteOutlined />
                         </button>
                       </Popconfirm>
@@ -255,10 +290,9 @@ function Products() {
               pageSize={pageSize}
               total={filteredProducts.length}
               onChange={(page) => {
-                setSearchParams((prev) => {
-                  const params = Object.fromEntries(prev);
-                  return { ...params, page };
-                });
+                const params = new URLSearchParams(searchParams);
+                params.set("page", page.toString());
+                setSearchParams(params);
 
                 window.scrollTo({
                   top: 0,
