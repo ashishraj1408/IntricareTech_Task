@@ -7,9 +7,19 @@ export const fetchProducts = async () => {
   return res.data;
 };
 
+export const fetchCategories = async () => {
+  const res = await axios.get(`${BASE_URL}/categories`);
+  return res.data;
+};
+
+export const fetchProductsByCategory = async (category) => {
+  const res = await axios.get(`${BASE_URL}/category/${category}`);
+  return res.data;
+};
+
 export const createProduct = async (data) => {
-  const res = await axios.post(BASE_URL, data);
-  return { ...data, id: Date.now() }; 
+  await axios.post(BASE_URL, data);
+  return { ...data, id: Date.now() };
 };
 
 export const updateProduct = async (id, data) => {
